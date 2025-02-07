@@ -1,28 +1,32 @@
 # Swift Codes API
 
 ## Wstęp
-Ten projekt to API do zarządzania kodami SWIFT. Obsługuje operacje CRUD dla kodów SWIFT i przechowuje je w bazie danych PostgreSQL.
+Ten projekt to API do zarządzania kodami SWIFT. Obsługuje operacje CRUD (Create, Read, Update, Delete) dla kodów SWIFT i przechowuje je w bazie danych PostgreSQL.
 
 ## Wymagania
-- **Docker** i **Docker Compose**
+- **Docker** i **Docker Compose** (do uruchomienia aplikacji)
 - **Postman** (opcjonalnie, do testowania endpointów)
+- **Git** (do pobrania repozytorium)
+- **cURL** (opcjonalnie, do testowania API w terminalu)
 
 ## Instalacja i uruchomienie
 ### 1. Klonowanie repozytorium
+Najpierw otwórz terminal (Linux/Mac) lub PowerShell (Windows) i wpisz:
 ```sh
 git clone https://github.com/igorpie1705/swift-codes-app.git
 cd swift-codes-app
 ```
 
 ### 2. Uruchomienie aplikacji w Dockerze
+Jeśli masz już zainstalowanego Dockera, wpisz w terminalu:
 ```sh
 docker-compose up --build
 ```
-Spowoduje to uruchomienie:
-- PostgreSQL jako bazy danych
+To uruchomi:
+- PostgreSQL jako bazę danych
 - API w kontenerze Go
 
-Aplikacja będzie dostępna na **http://localhost:8080**
+Aplikacja będzie dostępna pod adresem **http://localhost:8080**.
 
 ## Struktura projektu
 ```
@@ -70,16 +74,23 @@ curl -X DELETE http://localhost:8080/v1/swift-codes/NEWBANKGBXXX
 
 ## Testowanie API w Postman
 1. Otwórz **Postman**
-2. Dodaj nowy żądanie **GET/POST/DELETE**
+2. Dodaj nowe żądanie **GET/POST/DELETE**
 3. Użyj URL **http://localhost:8080/v1/swift-codes**
 4. Kliknij "Send" i sprawdź odpowiedź
 
 ## Uruchamianie testów
+Testy można uruchomić ręcznie w terminalu:
 ```sh
 go test ./tests -v
 ```
-Testy integracyjne sprawdzają poprawność działania API i bazy danych.
+
+### Uruchamianie testów w Dockerze
+Jeśli chcesz uruchomić testy w kontenerze Dockera, wpisz:
+```sh
+docker-compose run app go test ./tests -v
+```
+To sprawdzi poprawność działania API oraz połączenia z bazą danych.
 
 ## Zakończenie
-Jeśli masz pytania lub napotkasz błędy, zapraszam do kontaktu:)
+Jeśli masz pytania lub napotkasz błędy, zapraszam do kontaktu! :)
 
