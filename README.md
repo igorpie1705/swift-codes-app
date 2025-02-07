@@ -53,8 +53,10 @@ curl -X GET http://localhost:8080/v1/swift-codes/BCHICLRMXXX
 curl -X GET http://localhost:8080/v1/swift-codes/country/PL
 ```
 
-### Add a New SWIFT Code
-**POST /v1/swift-codes**
+### **Add a New SWIFT Code**
+**POST /v1/swift-codes**  
+
+#### **For Linux/macOS/WSL/Git Bash:**
 ```sh
 curl -X POST http://localhost:8080/v1/swift-codes -H "Content-Type: application/json" -d '{
     "swiftCode": "NEWBANKGBXXX",
@@ -64,6 +66,11 @@ curl -X POST http://localhost:8080/v1/swift-codes -H "Content-Type: application/
     "countryName": "United Kingdom",
     "isHeadquarter": true
 }'
+```
+
+#### **For Windows (cmd/Powershell):**
+```powershell
+curl -X POST http://localhost:8080/v1/swift-codes -H "Content-Type: application/json" -d "{ \"swiftCode\": \"NEWBANKGBXXX\", \"bankName\": \"New Bank\", \"address\": \"789 New St\", \"countryISO2\": \"GB\", \"countryName\": \"United Kingdom\", \"isHeadquarter\": true }"
 ```
 
 ### Delete a SWIFT Code
