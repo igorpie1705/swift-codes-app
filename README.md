@@ -1,7 +1,3 @@
-Here is the updated document with a "Technologies Used" section at the end:
-
----
-
 # Swift Codes API
 
 ## Introduction  
