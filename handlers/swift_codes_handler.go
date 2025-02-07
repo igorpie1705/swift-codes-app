@@ -15,7 +15,7 @@ func GetSwiftCode(c *gin.Context) {
 	db := database.GetDB()
 	result := db.Where("swift_code = ?", swiftCode).First(&swiftCodeData)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Swift code not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Swift code not found. Please check the code and try again."})
 		return
 	}
 
@@ -65,7 +65,7 @@ func GetSwiftCodeByCountry(c *gin.Context) {
 
 	result := db.Where("country_iso2 = ?", countryISO2).Find(&swiftCodes)
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch swift codes"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch swift codes for the specified country. Please try again later."})
 		return
 	}
 
@@ -74,6 +74,7 @@ func GetSwiftCodeByCountry(c *gin.Context) {
 			"countryISO2": countryISO2,
 			"countryName": "",
 			"swiftCodes":  []models.SwiftCode{},
+			"message":     "No swift codes found for the specified country.",
 		})
 		return
 	}
@@ -102,23 +103,23 @@ func AddSwiftCode(c *gin.Context) {
 	var swiftCode models.SwiftCode
 
 	if err := c.ShouldBindJSON(&swiftCode); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON format"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON format. Please check the data and try again."})
 		return
 	}
 
 	db := database.GetDB()
 	var existing models.SwiftCode
 	if err := db.Where("swift_code = ?", swiftCode.SwiftCode).First(&existing).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Swift code already exists"})
+		c.JSON(http.StatusConflict, gin.H{"error": "Swift code already exists. Please use a different code."})
 		return
 	}
 
 	if err := db.Create(&swiftCode).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add swift code"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add swift code. Please try again later."})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Swift code added successfully"})
+	c.JSON(http.StatusCreated, gin.H{"message": "Swift code added successfully."})
 }
 
 func DeleteSwiftCode(c *gin.Context) {
@@ -127,14 +128,14 @@ func DeleteSwiftCode(c *gin.Context) {
 	result := db.Where("swift_code = ?", swiftCode).Delete(&models.SwiftCode{})
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete swift code"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete swift code. Please try again later."})
 		return
 	}
 
 	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Swift code not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Swift code not found. Please check the code and try again."})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Swift code deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Swift code deleted successfully."})
 }

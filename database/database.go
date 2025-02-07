@@ -1,8 +1,9 @@
 package database
 
 import (
-	"github.com/igorpie1705/swift-codes-app/models"
+	"log"
 
+	"github.com/igorpie1705/swift-codes-app/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,11 +16,14 @@ func InitDB() *gorm.DB {
 	var err error
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Failed to connect to database")
+		log.Fatalf("Error connecting to the database: %v", err)
 	}
 
-	db.AutoMigrate(&models.SwiftCode{})
+	if err := db.AutoMigrate(&models.SwiftCode{}); err != nil {
+		log.Fatalf("Error during database migration: %v", err)
+	}
 
+	log.Println("Database connection established and migration completed successfully.")
 	return db
 }
 
