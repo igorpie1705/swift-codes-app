@@ -44,7 +44,7 @@ The application will be accessible at **http://localhost:8080**.
 ### Get a SWIFT Code
 **GET /v1/swift-codes/:swift-code**
 ```sh
-curl -X GET http://localhost:8080/v1/swift-codes/ABCDEFGXXX
+curl -X GET http://localhost:8080/v1/swift-codes/BCHICLRMXXX
 ```
 
 ### Get SWIFT Codes for a Country
