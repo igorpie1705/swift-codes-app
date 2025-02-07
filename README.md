@@ -91,5 +91,5 @@ docker-compose run app go test ./tests -v
 ```
 This will verify the correct operation of the API and the database connection.
 
-## Conclusion
+## Contact me
 If you have any questions or encounter issues, feel free to reach out! :)
