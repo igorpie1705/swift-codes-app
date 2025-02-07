@@ -11,7 +11,6 @@ import (
 
 func GetSwiftCode(c *gin.Context) {
 	swiftCode := c.Param("swift-code")
-
 	var swiftCodeData models.SwiftCode
 	db := database.GetDB()
 	result := db.Where("swift_code = ?", swiftCode).First(&swiftCodeData)
@@ -23,7 +22,6 @@ func GetSwiftCode(c *gin.Context) {
 	if swiftCodeData.IsHeadquarter {
 		var branches []models.SwiftCode
 		db.Where("SUBSTRING(swift_code, 1, 8) = ? AND is_headquarter = ?", swiftCodeData.SwiftCode[:8], false).Find(&branches)
-
 		filteredBranches := make([]gin.H, len(branches))
 		for i, branch := range branches {
 			filteredBranches[i] = gin.H{
@@ -64,24 +62,39 @@ func GetSwiftCodeByCountry(c *gin.Context) {
 
 	var swiftCodes []models.SwiftCode
 	db := database.GetDB()
-	db.Where("country_iso2 = ?", countryISO2).Find(&swiftCodes)
 
-	simplifiedSwiftCodes := make([]gin.H, 0)
-	for _, code := range swiftCodes {
-		simplifiedSwiftCodes = append(simplifiedSwiftCodes, gin.H{
+	result := db.Where("country_iso2 = ?", countryISO2).Find(&swiftCodes)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch swift codes"})
+		return
+	}
+
+	if len(swiftCodes) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"countryISO2": countryISO2,
+			"countryName": "",
+			"swiftCodes":  []models.SwiftCode{},
+		})
+		return
+	}
+
+	filteredSwiftCodes := make([]gin.H, len(swiftCodes))
+	for i, code := range swiftCodes {
+		filteredSwiftCodes[i] = gin.H{
 			"address":       code.Address,
 			"bankName":      code.Name,
 			"countryISO2":   code.CountryISO2,
 			"isHeadquarter": code.IsHeadquarter,
 			"swiftCode":     code.SwiftCode,
-		})
+		}
 	}
 
 	response := gin.H{
 		"countryISO2": countryISO2,
 		"countryName": swiftCodes[0].CountryName,
-		"swiftCodes":  simplifiedSwiftCodes,
+		"swiftCodes":  filteredSwiftCodes,
 	}
+
 	c.JSON(http.StatusOK, response)
 }
 
@@ -89,11 +102,17 @@ func AddSwiftCode(c *gin.Context) {
 	var swiftCode models.SwiftCode
 
 	if err := c.ShouldBindJSON(&swiftCode); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON format"})
 		return
 	}
 
 	db := database.GetDB()
+	var existing models.SwiftCode
+	if err := db.Where("swift_code = ?", swiftCode.SwiftCode).First(&existing).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Swift code already exists"})
+		return
+	}
+
 	if err := db.Create(&swiftCode).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add swift code"})
 		return
@@ -104,7 +123,6 @@ func AddSwiftCode(c *gin.Context) {
 
 func DeleteSwiftCode(c *gin.Context) {
 	swiftCode := c.Param("swift-code")
-
 	db := database.GetDB()
 	result := db.Where("swift_code = ?", swiftCode).Delete(&models.SwiftCode{})
 

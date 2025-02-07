@@ -28,7 +28,7 @@ func TestGetSwiftCode_Headquarter(t *testing.T) {
 	database.SetDB(db)
 
 	headquarter := models.SwiftCode{
-		SwiftCode:     "ABCDEFGHXXX",
+		SwiftCode:     "ABCDEFGJXXX",
 		Name:          "Main Bank",
 		Address:       "123 Main St",
 		CountryISO2:   "US",
@@ -36,7 +36,7 @@ func TestGetSwiftCode_Headquarter(t *testing.T) {
 		IsHeadquarter: true,
 	}
 	branch := models.SwiftCode{
-		SwiftCode:     "ABCDEFGH123",
+		SwiftCode:     "ABCDEFGJ123",
 		Name:          "Branch Bank",
 		Address:       "456 Branch St",
 		CountryISO2:   "US",
@@ -48,7 +48,7 @@ func TestGetSwiftCode_Headquarter(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = gin.Params{gin.Param{Key: "swift-code", Value: "ABCDEFGHXXX"}}
+	c.Params = gin.Params{gin.Param{Key: "swift-code", Value: "ABCDEFGJXXX"}}
 
 	GetSwiftCode(c)
 
@@ -60,7 +60,7 @@ func TestGetSwiftCode_Headquarter(t *testing.T) {
 		"countryISO2": "US",
 		"countryName": "United States",
 		"isHeadquarter": true,
-		"swiftCode": "ABCDEFGHXXX",
+		"swiftCode": "ABCDEFGJXXX",
 		"branches": [
 			{
 				"address": "456 Branch St",
@@ -68,27 +68,42 @@ func TestGetSwiftCode_Headquarter(t *testing.T) {
 				"countryISO2": "US",
 				"countryName": "United States",
 				"isHeadquarter": false,
-				"swiftCode": "ABCDEFGH123"
+				"swiftCode": "ABCDEFGJ123"
 			}
 		]
 	}`
 	assert.JSONEq(t, expectedResponse, w.Body.String())
 }
 
-func TestGetSwiftCodeByCountry_WithCodes(t *testing.T) {
+func TestGetSwiftCode_NotFound(t *testing.T) {
 	db := setupTestDB()
 	database.SetDB(db)
 
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{gin.Param{Key: "swift-code", Value: "INVALID123"}}
+
+	GetSwiftCode(c)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.JSONEq(t, `{"error": "Swift code not found"}`, w.Body.String())
+}
+
+func TestGetSwiftCodeByCountry_WithCodes(t *testing.T) {
+	db := setupTestDB()
+	database.SetDB(db)
+	db.Where("1 = 1").Delete(&models.SwiftCode{})
+
 	swiftCodes := []models.SwiftCode{
 		{
-			SwiftCode:   "ABCDEFGHXXX",
+			SwiftCode:   "ABCDEFGAXXX",
 			Name:        "Main Bank",
 			Address:     "123 Main St",
 			CountryISO2: "US",
 			CountryName: "United States",
 		},
 		{
-			SwiftCode:   "ABCDEFGH123",
+			SwiftCode:   "ABCDEFGA123",
 			Name:        "Branch Bank",
 			Address:     "456 Branch St",
 			CountryISO2: "US",
@@ -113,14 +128,14 @@ func TestGetSwiftCodeByCountry_WithCodes(t *testing.T) {
 				"bankName": "Main Bank",
 				"countryISO2": "US",
 				"isHeadquarter": false,
-				"swiftCode": "ABCDEFGHXXX"
+				"swiftCode": "ABCDEFGAXXX"
 			},
 			{
 				"address": "456 Branch St",
 				"bankName": "Branch Bank",
 				"countryISO2": "US",
 				"isHeadquarter": false,
-				"swiftCode": "ABCDEFGH123"
+				"swiftCode": "ABCDEFGA123"
 			}
 		]
 	}`
@@ -150,6 +165,41 @@ func TestAddSwiftCode(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 	assert.JSONEq(t, `{"message": "Swift code added successfully"}`, w.Body.String())
+}
+
+func TestAddSwiftCode_Duplicate(t *testing.T) {
+	db := setupTestDB()
+	database.SetDB(db)
+
+	swiftCode := models.SwiftCode{
+		SwiftCode:     "DUPLICATEXXX",
+		Name:          "Duplicate Bank",
+		Address:       "1 Dup St",
+		CountryISO2:   "FR",
+		CountryName:   "France",
+		IsHeadquarter: true,
+	}
+	db.Create(&swiftCode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	body := `{
+        "address": "1 Dup St",
+        "bankName": "Duplicate Bank",
+        "countryISO2": "FR",
+        "countryName": "France",
+        "isHeadquarter": true,
+        "swiftCode": "DUPLICATEXXX"
+    }`
+
+	c.Request, _ = http.NewRequest(http.MethodPost, "/v1/swift-codes", strings.NewReader(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	AddSwiftCode(c)
+
+	assert.Equal(t, http.StatusConflict, w.Code)
+	assert.JSONEq(t, `{"error": "Swift code already exists"}`, w.Body.String())
 }
 
 func TestDeleteSwiftCode(t *testing.T) {
