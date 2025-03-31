@@ -18,7 +18,7 @@ cd swift-codes-app
 ```
 
 ### 2. Start the Application in Docker  
-If you already have Docker installed, run the following command:
+If you already have Docker installed, open Docker Desktop and run the following command:
 ```sh
 docker-compose up --build
 ```
