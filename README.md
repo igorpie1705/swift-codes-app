@@ -14,7 +14,6 @@ This project is an API for managing SWIFT codes. It supports CRUD operations for
 First, open a terminal (Linux/Mac) or PowerShell (Windows) and type:
 ```sh
 git clone https://github.com/igorpie1705/swift-codes-app.git
-cd swift-codes-app
 ```
 
 ### 2. Start the Application in Docker  
